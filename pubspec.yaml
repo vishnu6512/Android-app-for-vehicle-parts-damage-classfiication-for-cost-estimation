@@ -47,6 +47,13 @@ dependencies:
   firebase_storage: ^11.6.5
   csv: ^5.1.1
   path_provider: ^2.1.2
+  pdf: ^3.10.7
+  file_picker: ^6.1.1
+  permission_handler: ^11.3.0
+  open_document: ^1.0.7
+  intl: ^0.18.1
+  http: ^1.2.0
+  path: ^1.8.3
 
 dev_dependencies:
   flutter_test:
@@ -74,6 +81,7 @@ flutter:
     - assets/output_modelfeb15.tflite
     - assets/labels.txt
     - assets/costs.csv
+    - assets/Helvetica CE Medium.otf
 
 
   # An image asset can refer to one or more resolution-specific "variants", see

@@ -9,6 +9,7 @@ import 'package:tflite_flutter/tflite_flutter.dart';
 import 'package:image/image.dart' as img_lib;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart' as firebase_storage;
+import 'dealer.dart';
 
 class CaptureImg extends StatefulWidget {
   final Map<String, dynamic> requestData;
@@ -193,10 +194,6 @@ class _CaptureImgState extends State<CaptureImg> {
   Future<void> loadModel() async {
     try {
       _interpreter = await Interpreter.fromAsset('assets/output_modelfeb15.tflite');
-      // Print input shape
-      var inputShape = _interpreter.getInputTensor(0).shape;
-      print('Input Shape: $inputShape');
-      // Add any other model initialization code here
     } catch (e) {
       print('Error loading model: $e');
     }
@@ -216,54 +213,40 @@ class _CaptureImgState extends State<CaptureImg> {
 
   void classifyImage(Uint8List imageBytes) {
     try {
-      // Resize the image to match the expected input dimensions
       final resizedImage = img_lib.decodeImage(imageBytes)!;
       final inputImage = img_lib.copyResize(resizedImage, width: 224, height: 224);
-
-      // Convert the image to a Float32List
       final inputBuffer = Float32List(224 * 224 * 3);
+
       for (var i = 0; i < 224; i++) {
         for (var j = 0; j < 224; j++) {
           var pixel = inputImage.getPixel(j, i);
-          // Normalize and set the pixel values
-          inputBuffer[i * 224 * 3 + j * 3 + 0] = ((pixel.r.toDouble() - 127.5) / 127.5).toDouble(); // Red channel
-          inputBuffer[i * 224 * 3 + j * 3 + 1] = ((pixel.g.toDouble() - 127.5) / 127.5).toDouble(); // Green channel
-          inputBuffer[i * 224 * 3 + j * 3 + 2] = ((pixel.b.toDouble() - 127.5) / 127.5).toDouble(); // Blue channel
+          inputBuffer[i * 224 * 3 + j * 3 + 0] = ((pixel.r.toDouble() - 127.5) / 127.5).toDouble();
+          inputBuffer[i * 224 * 3 + j * 3 + 1] = ((pixel.g.toDouble() - 127.5) / 127.5).toDouble();
+          inputBuffer[i * 224 * 3 + j * 3 + 2] = ((pixel.b.toDouble() - 127.5) / 127.5).toDouble();
         }
       }
 
-      // Run inference
       final outputBuffer = Float32List(1 * 12);
       _interpreter.run(inputBuffer.buffer.asUint8List(), outputBuffer.buffer.asUint8List());
-
-      // Get the index with the highest confidence
       final double maxConfidence = outputBuffer.reduce((a, b) => a > b ? a : b);
       final int index = outputBuffer.indexOf(maxConfidence);
-      print('Detected index: $index');
 
       setState(() {
         String label = _classNames[index];
-        print('Detected label: $label');
         _labels.add(label);
 
-        // Add the cost of parts to the corresponding vehicle model
         double partCost = (vehiclePartsCost[widget.requestData['vehicle_model']] ?? {})[label] ?? 0;
-        print('Part Cost: $partCost');
 
         if (_costData.containsKey(widget.requestData['vehicle_model'])) {
           _costData[widget.requestData['vehicle_model']]![label] = partCost;
         } else {
           _costData[widget.requestData['vehicle_model']] = {label: partCost};
         }
-        print('Cost Data: $_costData');
       });
     } catch (e) {
       print('Error classifying image: $e');
     }
   }
-
-
-
 
   Future<void> _captureImage(ImageSource source) async {
     final picker = ImagePicker();
@@ -279,10 +262,8 @@ class _CaptureImgState extends State<CaptureImg> {
 
   Future<void> _saveData() async {
     try {
-      // Upload images to Firebase Storage
       List<String> imageUrls = [];
       for (File image in _images) {
-        // Replace 'images' with your Firebase Storage folder path
         String imageName = DateTime.now().millisecondsSinceEpoch.toString();
         final ref = firebase_storage.FirebaseStorage.instance.ref().child('images/$imageName.jpg');
         await ref.putFile(image);
@@ -290,8 +271,7 @@ class _CaptureImgState extends State<CaptureImg> {
         imageUrls.add(imageUrl);
       }
 
-      // Save data to Firestore
-      await FirebaseFirestore.instance.collection('inspectiondata').add({
+      DocumentReference docRef = await FirebaseFirestore.instance.collection('inspectiondata').add({
         'name': widget.requestData['name'],
         'email': widget.requestData['email'],
         'phone': widget.requestData['phone'],
@@ -299,16 +279,21 @@ class _CaptureImgState extends State<CaptureImg> {
         'vehicle_model': widget.requestData['vehicle_model'],
         'image_urls': imageUrls,
         'labels': _labels,
+        'cost_data': _costData[widget.requestData['vehicle_model']],
       });
 
-      // Show success message
+      // Get the document ID from the DocumentReference
+      String docId = docRef.id;
+
+      // Update the document to store the document ID
+      await docRef.update({'doc_id': docId});
+
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: Text('Data saved successfully!'),
         duration: Duration(seconds: 2),
       ));
     } catch (e) {
       print('Error saving data: $e');
-      // Show error message
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: Text('Failed to save data. Please try again later.'),
         duration: Duration(seconds: 2),
@@ -316,17 +301,16 @@ class _CaptureImgState extends State<CaptureImg> {
     }
   }
 
-  void _analyzeCost() {
+
+  void _analyzeCostAndSave() {
     double totalCost = 0;
     String costDetails = '';
 
-    // Calculate total cost and generate cost details
     _costData[widget.requestData['vehicle_model']]?.forEach((key, value) {
       totalCost += value;
       costDetails += '$key: ${value.toStringAsFixed(2)}\n';
     });
 
-    // Show dialog with cost details
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -349,15 +333,42 @@ class _CaptureImgState extends State<CaptureImg> {
               },
               child: Text('Close'),
             ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                _saveData();
+              },
+              child: Text('Save'),
+            ),
           ],
         );
       },
     );
   }
 
+  void _inspectionCompleted() async {
+    try {
+      // Fetch the document ID from requestData
+      String documentId = widget.requestData['doc_id'];
+      print('Document ID: $documentId');
+
+      // Delete the document from Firestore
+      print('Deleting document with ID: $documentId');
+      await FirebaseFirestore.instance.collection('inspectionrequests').doc(documentId).delete();
+      print('Document deleted successfully.');
+
+      // Navigate to dealer page
+      Navigator.pushReplacementNamed(context, '/dealer');
+    } catch (e) {
+      print('Error completing inspection: $e');
+    }
+  }
+
+
+
+
   @override
   Widget build(BuildContext context) {
-    // Filter out the timestamp entry
     Map<String, dynamic> requestDataFiltered = Map.from(widget.requestData);
     requestDataFiltered.remove('timestamp');
 
@@ -370,7 +381,6 @@ class _CaptureImgState extends State<CaptureImg> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
-              // Display request details
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                 child: Container(
@@ -387,9 +397,9 @@ class _CaptureImgState extends State<CaptureImg> {
                           Text('${entry.key}:', style: TextStyle(fontWeight: FontWeight.bold)),
                           SizedBox(height: 5),
                           Text('${entry.value}'),
-                          SizedBox(height: 10), // Add separation between each detail
-                          Divider(), // Add a divider line between each detail
-                          SizedBox(height: 10), // Add additional spacing after the divider
+                          SizedBox(height: 10),
+                          Divider(),
+                          SizedBox(height: 10),
                         ],
                       );
                     }).toList(),
@@ -397,7 +407,6 @@ class _CaptureImgState extends State<CaptureImg> {
                 ),
               ),
               SizedBox(height: 20),
-              // Display captured images and labels
               ListView.builder(
                 shrinkWrap: true,
                 physics: NeverScrollableScrollPhysics(),
@@ -420,10 +429,6 @@ class _CaptureImgState extends State<CaptureImg> {
                     ],
                   );
                 },
-              ),
-              ElevatedButton(
-                onPressed: _saveData,
-                child: Text('Save Data'),
               ),
               ElevatedButton(
                 onPressed: () {
@@ -460,8 +465,12 @@ class _CaptureImgState extends State<CaptureImg> {
                 child: Text('Capture Image'),
               ),
               ElevatedButton(
-                onPressed: _analyzeCost,
+                onPressed: _analyzeCostAndSave,
                 child: Text('Analyze Cost'),
+              ),
+              ElevatedButton(
+                onPressed: _inspectionCompleted,
+                child: Text('Inspection Completed'),
               ),
             ],
           ),
@@ -469,14 +478,14 @@ class _CaptureImgState extends State<CaptureImg> {
       ),
     );
   }
-
-
-
-
 }
 
 void main() {
   runApp(MaterialApp(
-    home: CaptureImg(requestData: {}),
+    initialRoute: '/',
+    routes: {
+      '/': (context) => CaptureImg(requestData: {}), // Define your initial route
+      '/dealer': (context) => DealerPage(), // Define your dealer page widget here
+    },
   ));
 }

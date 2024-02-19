@@ -33,7 +33,7 @@ class InspectionRequestPage extends StatelessWidget {
 
     void _submitInspectionRequest() async {
       try {
-        await _firestore.collection('inspectionrequests').add({
+        DocumentReference docRef = await _firestore.collection('inspectionrequests').add({
           'name': nameController.text,
           'email': emailController.text,
           'phone': phoneController.text,
@@ -41,13 +41,22 @@ class InspectionRequestPage extends StatelessWidget {
           'vehicle_model': selectedModel,
           'timestamp': FieldValue.serverTimestamp(), // Optional: Timestamp when request was made
         });
-        // Success message or navigation to another screen can be added here
-        print('Inspection request submitted successfully!');
+
+        // Get the document ID from the DocumentReference
+        String docId = docRef.id;
+        print('Inspection request submitted successfully! Document ID: $docId');
+
+        // Update the document to store the document ID
+        await docRef.update({'doc_id': docId});
+
+        // Optionally, you can store the document ID or navigate to another screen here
       } catch (error) {
         // Error handling
         print('Error submitting inspection request: $error');
       }
     }
+
+
 
     return Scaffold(
       appBar: AppBar(
