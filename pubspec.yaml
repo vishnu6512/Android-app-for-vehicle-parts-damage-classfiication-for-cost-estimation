@@ -78,7 +78,7 @@ flutter:
   uses-material-design: true
 
   assets:
-    - assets/output_modelfeb15.tflite
+    - assets/output_modelfeb19.tflite
     - assets/labels.txt
     - assets/costs.csv
     - assets/Helvetica CE Medium.otf

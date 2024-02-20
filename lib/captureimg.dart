@@ -193,7 +193,7 @@ class _CaptureImgState extends State<CaptureImg> {
 
   Future<void> loadModel() async {
     try {
-      _interpreter = await Interpreter.fromAsset('assets/output_modelfeb15.tflite');
+      _interpreter = await Interpreter.fromAsset('assets/output_modelfeb19.tflite');
     } catch (e) {
       print('Error loading model: $e');
     }
@@ -386,7 +386,7 @@ class _CaptureImgState extends State<CaptureImg> {
                 child: Container(
                   padding: EdgeInsets.all(10),
                   decoration: BoxDecoration(
-                    color: Color(0xFFF1ECFF),
+                    color: Colors.red[50],
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: Column(

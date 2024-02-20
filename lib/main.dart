@@ -35,6 +35,9 @@ class MyApp extends StatelessWidget {
           buttonColor: const Color(0xFFEC2D33), // Set button background color
           textTheme: ButtonTextTheme.primary, // Use primary text style (white)
         ),
+        dialogTheme: DialogTheme(
+          backgroundColor: Colors.white, // Set dialog background color to white
+        ),
       ),
 
 

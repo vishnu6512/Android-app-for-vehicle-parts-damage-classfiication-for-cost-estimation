@@ -56,75 +56,76 @@ class InspectionRequestPage extends StatelessWidget {
       }
     }
 
-
-
     return Scaffold(
       appBar: AppBar(
         title: Text('Request Inspection'),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            Text(
-              'Request Inspection',
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-              textAlign: TextAlign.center,
-            ),
-            SizedBox(height: 16),
-            TextFormField(
-              controller: nameController,
-              decoration: InputDecoration(labelText: 'Name'),
-            ),
-            SizedBox(height: 16),
-            TextFormField(
-              controller: emailController,
-              decoration: InputDecoration(labelText: 'Email'),
-              keyboardType: TextInputType.emailAddress,
-            ),
-            SizedBox(height: 16),
-            TextFormField(
-              controller: phoneController,
-              decoration: InputDecoration(labelText: 'Phone Number'),
-              keyboardType: TextInputType.phone,
-            ),
-            SizedBox(height: 16),
-            TextFormField(
-              controller: addressController,
-              decoration: InputDecoration(labelText: 'Address'),
-              maxLines: 2,
-            ),
-            SizedBox(height: 16),
-            DropdownButtonFormField<String>(
-              value: selectedModel,
-              onChanged: (String? newValue) {
-                // Update the selectedModel when the value changes
-                selectedModel = newValue;
-              },
-              decoration: InputDecoration(labelText: 'Vehicle Model'),
-              items: vehicleModels.map<DropdownMenuItem<String>>((String value) {
-                return DropdownMenuItem<String>(
-                  value: value,
-                  child: Text(value),
-                );
-              }).toList(),
-            ),
-            SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: _submitInspectionRequest,// Call function to submit request
-              style: ButtonStyle(
-                backgroundColor: MaterialStateProperty.all<Color>(const Color(0xFFEC2D33)), // Set button background color
-                foregroundColor: MaterialStateProperty.all<Color>(Colors.white), // Set text color to white
+      body: SingleChildScrollView( // Wrap your Column with SingleChildScrollView
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              Text(
+                'Request Inspection',
+                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                textAlign: TextAlign.center,
               ),
-              child: Text('Request Inspection'),
-            ),
-          ],
+              SizedBox(height: 16),
+              TextFormField(
+                controller: nameController,
+                decoration: InputDecoration(labelText: 'Name'),
+              ),
+              SizedBox(height: 16),
+              TextFormField(
+                controller: emailController,
+                decoration: InputDecoration(labelText: 'Email'),
+                keyboardType: TextInputType.emailAddress,
+              ),
+              SizedBox(height: 16),
+              TextFormField(
+                controller: phoneController,
+                decoration: InputDecoration(labelText: 'Phone Number'),
+                keyboardType: TextInputType.phone,
+              ),
+              SizedBox(height: 16),
+              TextFormField(
+                controller: addressController,
+                decoration: InputDecoration(labelText: 'Address'),
+                maxLines: 2,
+              ),
+              SizedBox(height: 16),
+              DropdownButtonFormField<String>(
+                value: selectedModel,
+                onChanged: (String? newValue) {
+                  // Update the selectedModel when the value changes
+                  selectedModel = newValue;
+                },
+                decoration: InputDecoration(labelText: 'Vehicle Model'),
+                items: vehicleModels.map<DropdownMenuItem<String>>((String value) {
+                  return DropdownMenuItem<String>(
+                    value: value,
+                    child: Text(value),
+                  );
+                }).toList(),
+              ),
+              SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: _submitInspectionRequest,// Call function to submit request
+                style: ButtonStyle(
+                  backgroundColor: MaterialStateProperty.all<Color>(const Color(0xFFEC2D33)), // Set button background color
+                  foregroundColor: MaterialStateProperty.all<Color>(Colors.white), // Set text color to white
+                ),
+                child: Text('Request Inspection'),
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 }
+
 
 

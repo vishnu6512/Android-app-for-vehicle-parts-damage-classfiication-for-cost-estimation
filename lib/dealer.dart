@@ -63,7 +63,7 @@ class InspectionRequestsList extends StatelessWidget {
               return Padding(
                 padding: const EdgeInsets.symmetric(vertical: 8.0),
                 child: Card(
-                  color: Color(0xFFF1ECFF), // Background color
+                  color: Colors.red[50], // Background color
                   child: ListTile(
                     contentPadding: EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0), // Adjust padding as needed
                     leading: CircleAvatar(
@@ -85,7 +85,7 @@ class InspectionRequestsList extends StatelessWidget {
                         SizedBox(height: 4),
                         Text(
                           '${data['vehicle_model']}',
-                          style: TextStyle(color: Colors.grey),
+                          style: TextStyle(color: Colors.black),
                           maxLines: 1, // Limit to one line to prevent excessive height
                           overflow: TextOverflow.ellipsis, // Show ellipsis (...) if text overflows
                         ),
@@ -137,7 +137,7 @@ class InspectionRequestsList extends StatelessWidget {
       builder: (BuildContext context) {
         return AlertDialog(
           title: Text('Request Details'),
-          backgroundColor: Color(0xFFF1ECFF), // Background color
+          backgroundColor: Colors.white, // Background color
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(10.0), // Rounded corners
           ),

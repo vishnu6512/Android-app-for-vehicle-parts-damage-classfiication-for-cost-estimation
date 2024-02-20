@@ -50,24 +50,29 @@ class _SigninPageState extends State<SigninPage> {
       String email = _emailController.text.trim();
       String password = _passwordController.text.trim();
 
-      UserCredential userCredential = await FirebaseAuth.instance.signInWithEmailAndPassword(
+      UserCredential userCredential = await FirebaseAuth.instance
+          .signInWithEmailAndPassword(
         email: email,
         password: password,
       );
 
       await _saveUserData();
 
-      DocumentSnapshot userDoc = await FirebaseFirestore.instance.collection('users').doc(userCredential.user!.uid).get();
+      DocumentSnapshot userDoc = await FirebaseFirestore.instance.collection(
+          'users').doc(userCredential.user!.uid).get();
 
       if (userDoc.exists) {
         String? role = userDoc.get('role');
 
         if (role == 'admin') {
-          Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => AdminPage()));
+          Navigator.pushReplacement(
+              context, MaterialPageRoute(builder: (context) => AdminPage()));
         } else if (role == 'dealer') {
-          Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => DealerPage()));
+          Navigator.pushReplacement(
+              context, MaterialPageRoute(builder: (context) => DealerPage()));
         } else {
-          Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => UserPage()));
+          Navigator.pushReplacement(
+              context, MaterialPageRoute(builder: (context) => UserPage()));
         }
       } else {
         print('User document not found');
@@ -85,6 +90,20 @@ class _SigninPageState extends State<SigninPage> {
     }
   }
 
+  Future<void> _resetPassword(String email) async {
+    try {
+      await FirebaseAuth.instance.sendPasswordResetEmail(email: email);
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text('Password reset email sent to $email'),
+      ));
+    } catch (e) {
+      print('Error sending password reset email: $e');
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text('Failed to send password reset email'),
+      ));
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -98,12 +117,14 @@ class _SigninPageState extends State<SigninPage> {
           children: <Widget>[
             Flexible(
               child: Image.asset(
-                'assets/signin.png', // Replace 'signin_image.png' with your image asset path
+                'assets/signin.png',
+                // Replace 'signin_image.png' with your image asset path
                 width: 350, // Adjust width as needed
                 height: 350, // Adjust height as needed
               ),
             ),
-            SizedBox(height: 20), // Add some space between the image and the form fields
+            SizedBox(height: 20),
+            // Add some space between the image and the form fields
             Form(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -134,10 +155,48 @@ class _SigninPageState extends State<SigninPage> {
                   ElevatedButton(
                     onPressed: _signIn,
                     style: ButtonStyle(
-                      backgroundColor: MaterialStateProperty.all<Color>(const Color(0xFFEC2D33)),
-                      foregroundColor: MaterialStateProperty.all<Color>(Colors.white),
+                      backgroundColor: MaterialStateProperty.all<Color>(
+                          const Color(0xFFEC2D33)),
+                      foregroundColor: MaterialStateProperty.all<Color>(
+                          Colors.white),
                     ),
                     child: Text('Sign In'),
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      showDialog(
+                        context: context,
+                        builder: (BuildContext context) {
+                          return AlertDialog(
+                            title: Text('Reset Password'),
+                            content: TextFormField(
+                              controller: TextEditingController(),
+                              decoration: InputDecoration(
+                                  labelText: 'Enter your email'),
+                            ),
+                            actions: [
+                              TextButton(
+                                onPressed: () {
+                                  Navigator.pop(context);
+                                },
+                                child: Text('Cancel'),
+                              ),
+                              ElevatedButton(
+                                onPressed: () {
+                                  String email = _emailController.text.trim();
+                                  if (email.isNotEmpty) {
+                                    _resetPassword(email);
+                                    Navigator.pop(context);
+                                  }
+                                },
+                                child: Text('Reset Password'),
+                              ),
+                            ],
+                          );
+                        },
+                      );
+                    },
+                    child: Text('Forgot Password?'),
                   ),
                 ],
               ),
