@@ -462,14 +462,26 @@ class _CaptureImgState extends State<CaptureImg> {
                     },
                   );
                 },
+                style: ButtonStyle(
+                  backgroundColor: MaterialStateProperty.all<Color>(const Color(0xFFEC2D33)), // Set button background color
+                  foregroundColor: MaterialStateProperty.all<Color>(Colors.white), // Set text color to white
+                ),
                 child: Text('Capture Image'),
               ),
               ElevatedButton(
                 onPressed: _analyzeCostAndSave,
+                style: ButtonStyle(
+                  backgroundColor: MaterialStateProperty.all<Color>(const Color(0xFFEC2D33)), // Set button background color
+                  foregroundColor: MaterialStateProperty.all<Color>(Colors.white), // Set text color to white
+                ),
                 child: Text('Analyze Cost'),
               ),
               ElevatedButton(
                 onPressed: _inspectionCompleted,
+                style: ButtonStyle(
+                  backgroundColor: MaterialStateProperty.all<Color>(const Color(0xFFEC2D33)), // Set button background color
+                  foregroundColor: MaterialStateProperty.all<Color>(Colors.white), // Set text color to white
+                ),
                 child: Text('Inspection Completed'),
               ),
             ],

@@ -45,6 +45,10 @@ class UserPage extends StatelessWidget {
                 await FirebaseAuth.instance.signOut();
                 Navigator.pop(context);
               },
+              style: ButtonStyle(
+                backgroundColor: MaterialStateProperty.all<Color>(const Color(0xFFEC2D33)), // Set button background color
+                foregroundColor: MaterialStateProperty.all<Color>(Colors.white), // Set text color to white
+              ),
               child: Text('Sign Out'),
             ),
             SizedBox(height: 16),
@@ -52,6 +56,10 @@ class UserPage extends StatelessWidget {
               onPressed: () {
                 Navigator.pushNamed(context, '/register_vehicle');
               },
+              style: ButtonStyle(
+                backgroundColor: MaterialStateProperty.all<Color>(const Color(0xFFEC2D33)), // Set button background color
+                foregroundColor: MaterialStateProperty.all<Color>(Colors.white), // Set text color to white
+              ),
               child: Text('New User? Register Your Vehicle!'),
             ),
             SizedBox(height: 16),
@@ -59,6 +67,10 @@ class UserPage extends StatelessWidget {
               onPressed: () {
                 Navigator.pushNamed(context, '/inspectionrequest');
               },
+              style: ButtonStyle(
+                backgroundColor: MaterialStateProperty.all<Color>(const Color(0xFFEC2D33)), // Set button background color
+                foregroundColor: MaterialStateProperty.all<Color>(Colors.white), // Set text color to white
+              ),
               child: Text('Request Inspection'),
             ),
             SizedBox(height: 16),
@@ -127,6 +139,10 @@ class UserPage extends StatelessWidget {
                   },
                 );
               },
+              style: ButtonStyle(
+                backgroundColor: MaterialStateProperty.all<Color>(const Color(0xFFEC2D33)), // Set button background color
+                foregroundColor: MaterialStateProperty.all<Color>(Colors.white), // Set text color to white
+              ),
               child: Text('Check Status'),
             ),
           ],

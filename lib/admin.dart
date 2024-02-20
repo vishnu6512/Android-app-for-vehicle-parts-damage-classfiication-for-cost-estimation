@@ -40,6 +40,10 @@ class AdminPage extends StatelessWidget {
                 MaterialPageRoute(builder: (context) => DealerSignupPage()),
               );
             },
+            style: ButtonStyle(
+              backgroundColor: MaterialStateProperty.all<Color>(const Color(0xFFEC2D33)), // Set button background color
+              foregroundColor: MaterialStateProperty.all<Color>(Colors.white), // Set text color to white
+            ),
             child: Text('Register Dealer'),
           ),
           SizedBox(height: 20),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:intl/intl.dart';
 import 'captureimg.dart';
 
 class DealerPage extends StatelessWidget {
@@ -52,35 +53,83 @@ class InspectionRequestsList extends StatelessWidget {
           return Center(child: Text('No inspection requests found.'));
         }
 
-        return ListView.builder(
-          itemCount: snapshot.data!.docs.length,
-          itemBuilder: (BuildContext context, int index) {
-            DocumentSnapshot document = snapshot.data!.docs[index];
-            Map<String, dynamic> data = document.data() as Map<String, dynamic>;
-            return Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8.0),
-              child: Card(
-                color: Color(0xFFF1ECFF), // Background color
-                child: ListTile(
-                  title: Text('Name: ${data['name']}'),
-                  subtitle: Text('Vehicle Model: ${data['vehicle_model']}'),
-                  trailing: IconButton(
-                    icon: Icon(Icons.close),
-                    onPressed: () {
-                      _deleteRequest(context, document.id);
+        return SingleChildScrollView( // Wrap with SingleChildScrollView
+          child: ListView.builder(
+            shrinkWrap: true, // Set shrinkWrap to true
+            itemCount: snapshot.data!.docs.length,
+            itemBuilder: (BuildContext context, int index) {
+              DocumentSnapshot document = snapshot.data!.docs[index];
+              Map<String, dynamic> data = document.data() as Map<String, dynamic>;
+              return Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8.0),
+                child: Card(
+                  color: Color(0xFFF1ECFF), // Background color
+                  child: ListTile(
+                    contentPadding: EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0), // Adjust padding as needed
+                    leading: CircleAvatar(
+                      backgroundColor: Colors.red,
+                      child: Text(
+                        '${data['name'][0].toUpperCase()}',
+                        style: TextStyle(color: Colors.white),
+                      ),
+                    ),
+                    title: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          '${data['name']}',
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                          maxLines: 1, // Limit to one line to prevent excessive height
+                          overflow: TextOverflow.ellipsis, // Show ellipsis (...) if text overflows
+                        ),
+                        SizedBox(height: 4),
+                        Text(
+                          '${data['vehicle_model']}',
+                          style: TextStyle(color: Colors.grey),
+                          maxLines: 1, // Limit to one line to prevent excessive height
+                          overflow: TextOverflow.ellipsis, // Show ellipsis (...) if text overflows
+                        ),
+                      ],
+                    ),
+                    trailing: SizedBox(
+                      width: 100, // Adjust the width as needed
+                      child: SingleChildScrollView(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            Text(
+                              '${DateFormat.yMd().format(data['timestamp'].toDate())} | ${DateFormat.jm().format(data['timestamp'].toDate())}',
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                            SizedBox(height: 8),
+                            IconButton(
+                              icon: Icon(Icons.close),
+                              onPressed: () {
+                                _deleteRequest(context, document.id);
+                              },
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+
+
+
+                    onTap: () {
+                      _showRequestDetails(context, data);
                     },
                   ),
-                  onTap: () {
-                    _showRequestDetails(context, data);
-                  },
                 ),
-              ),
-            );
-          },
+              );
+            },
+          ),
         );
       },
     );
   }
+
+
 
   void _showRequestDetails(BuildContext context, Map<String, dynamic> data) {
     showDialog(
@@ -125,7 +174,10 @@ class InspectionRequestsList extends StatelessWidget {
                       context,
                       MaterialPageRoute(builder: (context) => CaptureImg(requestData: data)),
                     );
-                  },
+                  },style: ButtonStyle(
+                  backgroundColor: MaterialStateProperty.all<Color>(const Color(0xFFEC2D33)), // Set button background color
+                  foregroundColor: MaterialStateProperty.all<Color>(Colors.white), // Set text color to white
+                ),
                   child: Text('Inspect'),
                 ),
               ),

@@ -60,6 +60,9 @@ class _SignupPageState extends State<SignupPage> {
       });
 
       print('User signed up: ${userCredential.user!.uid}');
+
+      // Navigate back to the sign-in page
+      Navigator.pop(context);
     } on FirebaseAuthException catch (e) {
       if (e.code == 'weak-password') {
         print('The password provided is too weak.');
@@ -71,51 +74,86 @@ class _SignupPageState extends State<SignupPage> {
     }
   }
 
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text('Signup'),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: <Widget>[
-              TextFormField(
-                controller: _emailController,
-                decoration: InputDecoration(labelText: 'Email'),
-                validator: _validateEmail,
-              ),
-              TextFormField(
-                controller: _passwordController,
-                decoration: InputDecoration(labelText: 'Password'),
-                obscureText: true,
-                validator: _validatePassword,
-              ),
-              TextFormField(
-                controller: _confirmPasswordController,
-                decoration: InputDecoration(labelText: 'Confirm Password'),
-                obscureText: true,
-                validator: _validateConfirmPassword,
-              ),
-              SizedBox(height: 16.0),
-              ElevatedButton(
-                onPressed: () {
-                  if (_formKey.currentState!.validate()) {
-                    _signUp();
-                  }
-                },
-                child: Text('Signup'),
-              ),
-            ],
+      backgroundColor: Colors.white,
+      body: SingleChildScrollView(
+        child: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: <Widget>[
+                Image.asset(
+                  'assets/signup2.png',
+                  width: 350,
+                  height: 350,
+                ),
+                SizedBox(height: 20), // Add some space between the image and the text
+                Text(
+                  'Simple and secure sign-up process.',
+                  style: TextStyle(
+                    color: Color(0xFF030303),
+                    fontSize: 18,
+                    fontFamily: 'Roboto',
+
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                SizedBox(height: 20), // Add some space below the text
+                Form(
+                  key: _formKey,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: <Widget>[
+                      TextFormField(
+                        controller: _emailController,
+                        decoration: InputDecoration(labelText: 'Email'),
+                        validator: _validateEmail,
+                      ),
+                      TextFormField(
+                        controller: _passwordController,
+                        decoration: InputDecoration(labelText: 'Password'),
+                        obscureText: true,
+                        validator: _validatePassword,
+                      ),
+                      TextFormField(
+                        controller: _confirmPasswordController,
+                        decoration: InputDecoration(labelText: 'Confirm Password'),
+                        obscureText: true,
+                        validator: _validateConfirmPassword,
+                      ),
+                      SizedBox(height: 16.0),
+                      ElevatedButton(
+                        onPressed: () {
+                          if (_formKey.currentState!.validate()) {
+                            _signUp();
+                          }
+                        },
+                        style: ButtonStyle(
+                          backgroundColor: MaterialStateProperty.all<Color>(const Color(0xFFEC2D33)),
+                          foregroundColor: MaterialStateProperty.all<Color>(Colors.white),
+                        ),
+                        child: Text('Signup'),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
     );
   }
+
+
+
 }
 
 void main() {

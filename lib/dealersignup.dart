@@ -92,6 +92,10 @@ class _DealerSignupPageState extends State<DealerSignupPage> {
                     _signUp();
                   }
                 },
+                style: ButtonStyle(
+                  backgroundColor: MaterialStateProperty.all<Color>(const Color(0xFFEC2D33)), // Set button background color
+                  foregroundColor: MaterialStateProperty.all<Color>(Colors.white), // Set text color to white
+                ),
                 child: Text('Signup'),
               ),
             ],
