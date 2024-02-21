@@ -13,7 +13,6 @@ import 'dealer.dart';
 
 class CaptureImg extends StatefulWidget {
   final Map<String, dynamic> requestData;
-
   const CaptureImg({Key? key, required this.requestData}) : super(key: key);
 
   @override

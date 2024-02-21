@@ -19,7 +19,24 @@ class UserPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final User? user = ModalRoute.of(context)!.settings.arguments as User?;
+    return FutureBuilder<User?>(
+      future: FirebaseAuth.instance.authStateChanges().first,
+      builder: (BuildContext context, AsyncSnapshot<User?> snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return CircularProgressIndicator(); // Show a loading indicator while fetching user data
+        } else if (snapshot.hasError) {
+          return Text('Error: ${snapshot.error}');
+        } else if (snapshot.data == null) {
+          return Text('User not signed in');
+        } else {
+          final User user = snapshot.data!;
+          return _buildUserPage(context, user);
+        }
+      },
+    );
+  }
+
+  Widget _buildUserPage(BuildContext context, User user) {
     String phoneNumber = '';
 
     return Scaffold(
@@ -36,7 +53,7 @@ class UserPage extends StatelessWidget {
             ),
             SizedBox(height: 16),
             Text(
-              user != null ? user.email! : 'User email not available',
+              user.email ?? 'User email not available',
               style: TextStyle(fontSize: 18),
             ),
             SizedBox(height: 16),

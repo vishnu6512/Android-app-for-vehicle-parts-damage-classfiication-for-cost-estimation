@@ -17,6 +17,7 @@ class _SigninPageState extends State<SigninPage> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   bool _rememberMe = false;
+  bool _isLoading = false;
 
   @override
   void initState() {
@@ -151,9 +152,24 @@ class _SigninPageState extends State<SigninPage> {
                       Text('Remember Me'),
                     ],
                   ),
+
                   SizedBox(height: 16.0),
-                  ElevatedButton(
-                    onPressed: _signIn,
+                  _isLoading
+                      ? CircularProgressIndicator() // Show loading indicator if _isLoading is true
+                      : ElevatedButton(
+                    onPressed: () async {
+                      setState(() {
+                        _isLoading = true; // Set loading state to true
+                      });
+                      try {
+                        // Your sign-in logic goes here
+                        await _signIn();
+                      } finally {
+                        setState(() {
+                          _isLoading = false; // Reset loading state
+                        });
+                      }
+                    },
                     style: ButtonStyle(
                       backgroundColor: MaterialStateProperty.all<Color>(
                           const Color(0xFFEC2D33)),

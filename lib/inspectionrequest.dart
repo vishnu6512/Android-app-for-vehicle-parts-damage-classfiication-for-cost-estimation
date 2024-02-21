@@ -1,12 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-class InspectionRequestPage extends StatelessWidget {
+class InspectionRequestPage extends StatefulWidget {
   const InspectionRequestPage({Key? key}) : super(key: key);
 
   @override
+  _InspectionRequestPageState createState() => _InspectionRequestPageState();
+}
+
+class _InspectionRequestPageState extends State<InspectionRequestPage> {
+  final TextEditingController nameController = TextEditingController();
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController phoneController = TextEditingController();
+  final TextEditingController addressController = TextEditingController();
+  String? selectedModel;
+  bool _isLoading = false;
+
+  @override
   Widget build(BuildContext context) {
-    // Define the list of vehicle models
     List<String> vehicleModels = [
       'Wagon R',
       'Eco Sport',
@@ -22,45 +33,46 @@ class InspectionRequestPage extends StatelessWidget {
       'Tigor',
     ];
 
-    String? selectedModel;
-    TextEditingController nameController = TextEditingController();
-    TextEditingController emailController = TextEditingController();
-    TextEditingController phoneController = TextEditingController();
-    TextEditingController addressController = TextEditingController();
-
-    // Firestore instance
-    final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-
-    void _submitInspectionRequest() async {
+    Future<void> _submitInspectionRequest() async {
       try {
-        DocumentReference docRef = await _firestore.collection('inspectionrequests').add({
+        setState(() {
+          _isLoading = true;
+        });
+        DocumentReference docRef = await FirebaseFirestore.instance
+            .collection('inspectionrequests')
+            .add({
           'name': nameController.text,
           'email': emailController.text,
           'phone': phoneController.text,
           'address': addressController.text,
           'vehicle_model': selectedModel,
-          'timestamp': FieldValue.serverTimestamp(), // Optional: Timestamp when request was made
+          'timestamp': FieldValue.serverTimestamp(),
         });
-
-        // Get the document ID from the DocumentReference
         String docId = docRef.id;
         print('Inspection request submitted successfully! Document ID: $docId');
-
-        // Update the document to store the document ID
         await docRef.update({'doc_id': docId});
 
-        // Optionally, you can store the document ID or navigate to another screen here
+        // Show a message using SnackBar
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Inspection request submitted successfully! An authorized dealer will contact you soon!'),
+          ),
+        );
       } catch (error) {
-        // Error handling
         print('Error submitting inspection request: $error');
+      } finally {
+        setState(() {
+          _isLoading = false;
+        });
       }
     }
+
 
     return Scaffold(
       appBar: AppBar(
         title: Text('Request Inspection'),
       ),
-      body: SingleChildScrollView( // Wrap your Column with SingleChildScrollView
+      body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(
@@ -99,8 +111,9 @@ class InspectionRequestPage extends StatelessWidget {
               DropdownButtonFormField<String>(
                 value: selectedModel,
                 onChanged: (String? newValue) {
-                  // Update the selectedModel when the value changes
-                  selectedModel = newValue;
+                  setState(() {
+                    selectedModel = newValue;
+                  });
                 },
                 decoration: InputDecoration(labelText: 'Vehicle Model'),
                 items: vehicleModels.map<DropdownMenuItem<String>>((String value) {
@@ -111,11 +124,15 @@ class InspectionRequestPage extends StatelessWidget {
                 }).toList(),
               ),
               SizedBox(height: 16),
-              ElevatedButton(
-                onPressed: _submitInspectionRequest,// Call function to submit request
+              _isLoading
+                  ? Center(child: CircularProgressIndicator())
+                  : ElevatedButton(
+                onPressed: _submitInspectionRequest,
                 style: ButtonStyle(
-                  backgroundColor: MaterialStateProperty.all<Color>(const Color(0xFFEC2D33)), // Set button background color
-                  foregroundColor: MaterialStateProperty.all<Color>(Colors.white), // Set text color to white
+                  backgroundColor: MaterialStateProperty.all<Color>(
+                      const Color(0xFFEC2D33)),
+                  foregroundColor: MaterialStateProperty.all<Color>(
+                      Colors.white),
                 ),
                 child: Text('Request Inspection'),
               ),

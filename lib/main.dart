@@ -62,99 +62,96 @@ class MyHomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('InsureDrive', textAlign: TextAlign.center,),
-        centerTitle: true,
-      ),
       body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Center(
-              child: Padding(
-                padding: EdgeInsets.only(top: 100),
-                child: Image.asset(
-                  'assets/main.png', // Path to your image asset
-                  width: 350,
-                  height: 350,
-                ),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              SizedBox(height: 10), // Reduce the gap here
+              Image.asset(
+                'assets/logomain.png',
+                width: 350,
+                height: 100,
               ),
-            ),
-
-            Text(
-              'Welcome to InsureDrive,',
-              style: TextStyle(
-                color: Color(0xFF080A0B),
-                fontSize: 32,
-                fontFamily: 'Montserrat',
-                fontWeight: FontWeight.bold,
-                height: 1.25, // Line height equivalent to 40px
+              SizedBox(height: 1), // Reduce the gap here
+              Image.asset(
+                'assets/main.png',
+                width: 350,
+                height: 350,
               ),
-              textAlign: TextAlign.center, // Text alignment property here
-            ),
-            SizedBox(height: 20),
-            Text(
-              'Discover the best insurance options for your vehicle',
-              style: TextStyle(
-                color: Color(0xFF5D5D5B),
-                fontSize: 14,
-                fontFamily: 'Montserrat',
-                height: 1.5, // Line height equivalent to 18px
-              ),
-              textAlign: TextAlign.center, // Text alignment property here
-            ),
-            SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.pushNamed(context, '/signup');
-              },
-              style: ElevatedButton.styleFrom(
-                primary: Color(0xFFEC2D33), // Background color
-                onPrimary: Colors.white, // Text color
-                minimumSize: Size(335, 48), // Width and height of the button
-                padding: EdgeInsets.symmetric(horizontal: 8), // Horizontal padding
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(24), // Button border radius
-                ),
-              ),
-              child: Text(
-                'Get Started',
+              SizedBox(height: 10), // Reduce the gap here
+              Text(
+                'Welcome to InsureDrive,',
                 style: TextStyle(
-                  fontSize: 14,
+                  color: Color(0xFF080A0B),
+                  fontSize: 32,
                   fontFamily: 'Montserrat',
                   fontWeight: FontWeight.bold,
-                  height: 1.25, // Line height equivalent to 20px
+                  height: 1.25,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              SizedBox(height: 10), // Reduce the gap here
+              Text(
+                'Discover the best insurance options for your vehicle',
+                style: TextStyle(
+                  color: Color(0xFF5D5D5B),
+                  fontSize: 14,
+                  fontFamily: 'Montserrat',
+                  height: 1.5,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              SizedBox(height: 10), // Reduce the gap here
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.pushNamed(context, '/signup');
+                },
+                style: ElevatedButton.styleFrom(
+                  primary: Color(0xFFEC2D33),
+                  onPrimary: Colors.white,
+                  minimumSize: Size(335, 48),
+                  padding: EdgeInsets.symmetric(horizontal: 8),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(24),
+                  ),
+                ),
+                child: Text(
+                  'Get Started',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontFamily: 'Montserrat',
+                    fontWeight: FontWeight.bold,
+                    height: 1.25,
+                  ),
                 ),
               ),
-            ),
-
-            SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.pushNamed(context, '/signin');
-              },
-              style: ElevatedButton.styleFrom(
-                primary:  Colors.white,// Background color
-                onPrimary: Color(0xFFEC2D33), // Text color
-                minimumSize: Size(335, 48), // Width and height of the button
-                padding: EdgeInsets.symmetric(horizontal: 8), // Horizontal padding
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(24), // Button border radius
+              SizedBox(height: 10), // Reduce the gap here
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.pushNamed(context, '/signin');
+                },
+                style: ElevatedButton.styleFrom(
+                  primary: Colors.white,
+                  onPrimary: Color(0xFFEC2D33),
+                  minimumSize: Size(335, 48),
+                  padding: EdgeInsets.symmetric(horizontal: 8),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(24),
+                  ),
                 ),
+                child: Text('Existing User? Sign-In'),
               ),
-              child: Text('Existing User? Sign-In'),
-            ),
-
-
-          ],
+            ],
+          ),
         ),
       ),
-
-
-
     );
   }
 }
+
+
+
 
 
 
