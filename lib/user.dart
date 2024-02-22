@@ -10,8 +10,6 @@ import 'package:intl/intl.dart';
 import 'package:http/http.dart' as http;
 import 'package:path/path.dart' as path;
 
-
-
 class UserPage extends StatelessWidget {
   final GlobalKey<ScaffoldMessengerState> _scaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
 
@@ -41,132 +39,142 @@ class UserPage extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('User Page'),
+        title: Text('User'),
+        actions: [
+          IconButton(
+            onPressed: () async {
+              await FirebaseAuth.instance.signOut();
+              Navigator.pop(context);
+            },
+            icon: Icon(Icons.logout),
+          ),
+        ],
       ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              'Welcome,',
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: 16),
-            Text(
-              user.email ?? 'User email not available',
-              style: TextStyle(fontSize: 18),
-            ),
-            SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: () async {
-                await FirebaseAuth.instance.signOut();
-                Navigator.pop(context);
-              },
-              style: ButtonStyle(
-                backgroundColor: MaterialStateProperty.all<Color>(const Color(0xFFEC2D33)), // Set button background color
-                foregroundColor: MaterialStateProperty.all<Color>(Colors.white), // Set text color to white
+      body: SingleChildScrollView( // Wrap the Column with SingleChildScrollView
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Image.asset(
+                'assets/user.png',
+                width: 350,
+                height: 320,
               ),
-              child: Text('Sign Out'),
-            ),
-            SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.pushNamed(context, '/register_vehicle');
-              },
-              style: ButtonStyle(
-                backgroundColor: MaterialStateProperty.all<Color>(const Color(0xFFEC2D33)), // Set button background color
-                foregroundColor: MaterialStateProperty.all<Color>(Colors.white), // Set text color to white
+              SizedBox(height: 16),
+              FutureBuilder<DocumentSnapshot>(
+                future: FirebaseFirestore.instance.collection('users').doc(user.uid).get(),
+                builder: (BuildContext context, AsyncSnapshot<DocumentSnapshot> snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return CircularProgressIndicator(); // Show a loading indicator while fetching user data
+                  } else if (snapshot.hasError) {
+                    return Text('Error: ${snapshot.error}');
+                  } else if (!snapshot.hasData || !snapshot.data!.exists) {
+                    return Text('User data not available');
+                  } else {
+                    final userData = snapshot.data!.data() as Map<String, dynamic>;
+                    final userName = userData['name'];
+                    return Text(
+                      'Welcome, $userName',
+                      style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                    );
+                  }
+                },
               ),
-              child: Text('New User? Register Your Vehicle!'),
-            ),
-            SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.pushNamed(context, '/inspectionrequest');
-              },
-              style: ButtonStyle(
-                backgroundColor: MaterialStateProperty.all<Color>(const Color(0xFFEC2D33)), // Set button background color
-                foregroundColor: MaterialStateProperty.all<Color>(Colors.white), // Set text color to white
+              SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.pushNamed(context, '/register_vehicle');
+                },
+                style: ButtonStyle(
+                  backgroundColor: MaterialStateProperty.all<Color>(const Color(0xFFEC2D33)), // Set button background color
+                  foregroundColor: MaterialStateProperty.all<Color>(Colors.white), // Set text color to white
+                ),
+                child: Text('New User? Register Your Vehicle!'),
               ),
-              child: Text('Request Inspection'),
-            ),
-            SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: () {
-                showDialog(
-                  context: context,
-                  builder: (BuildContext context) {
-                    return AlertDialog(
-                      title: Text('Check Status'),
-                      content: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          TextFormField(
-                            decoration: InputDecoration(labelText: 'Enter Phone Number'),
-                            onChanged: (value) {
-                              phoneNumber = value;
+              SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.pushNamed(context, '/inspectionrequest');
+                },
+                style: ButtonStyle(
+                  backgroundColor: MaterialStateProperty.all<Color>(const Color(0xFFEC2D33)), // Set button background color
+                  foregroundColor: MaterialStateProperty.all<Color>(Colors.white), // Set text color to white
+                ),
+                child: Text('Request Inspection'),
+              ),
+              SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: () {
+                  showDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return AlertDialog(
+                        title: Text('Check Status'),
+                        content: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            TextFormField(
+                              decoration: InputDecoration(labelText: 'Enter Phone Number'),
+                              onChanged: (value) {
+                                phoneNumber = value;
+                              },
+                            ),
+                          ],
+                        ),
+                        actions: [
+                          ElevatedButton(
+                            onPressed: () {
+                              Navigator.pop(context);
                             },
+                            child: Text('Cancel'),
+                          ),
+                          ElevatedButton(
+                            onPressed: () async {
+                              QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+                                  .collection('inspectiondata')
+                                  .where('phone', isEqualTo: phoneNumber)
+                                  .get();
+
+                              if (querySnapshot.docs.isNotEmpty) {
+                                var inspectionData = querySnapshot.docs.first.data();
+                                print('Cost Data: ${(inspectionData as Map<String, dynamic>)['cost_data']}');
+
+                                generateAndSavePdf(context, inspectionData);
+                              } else {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text('No inspection data found for the entered phone number.'),
+                                    action: SnackBarAction(
+                                      label: 'OK',
+                                      onPressed: () {
+                                        ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                                      },
+                                    ),
+                                  ),
+                                );
+                              }
+                              Navigator.pop(context);
+                            },
+                            child: Text('Submit'),
                           ),
                         ],
-                      ),
-                      actions: [
-                        ElevatedButton(
-                          onPressed: () {
-                            Navigator.pop(context);
-                          },
-                          child: Text('Cancel'),
-                        ),
-                        ElevatedButton(
-                          onPressed: () async {
-                            QuerySnapshot querySnapshot = await FirebaseFirestore.instance
-                                .collection('inspectiondata')
-                                .where('phone', isEqualTo: phoneNumber)
-                                .get();
-
-                            if (querySnapshot.docs.isNotEmpty) {
-                              var inspectionData = querySnapshot.docs.first.data();
-                              print('Cost Data: ${(inspectionData as Map<String, dynamic>)['cost_data']}');
-
-                              generateAndSavePdf(context, inspectionData);
-                            } else {
-                              showDialog(
-                                context: context,
-                                builder: (BuildContext context) {
-                                  return AlertDialog(
-                                    title: Text('No Inspection Data Found'),
-                                    content: Text('No inspection data found for the entered phone number.'),
-                                    actions: [
-                                      ElevatedButton(
-                                        onPressed: () {
-                                          Navigator.pop(context);
-                                        },
-                                        child: Text('OK'),
-                                      ),
-                                    ],
-                                  );
-                                },
-                              );
-                            }
-                            Navigator.pop(context);
-                          },
-                          child: Text('Submit'),
-                        ),
-                      ],
-                    );
-                  },
-                );
-              },
-              style: ButtonStyle(
-                backgroundColor: MaterialStateProperty.all<Color>(const Color(0xFFEC2D33)), // Set button background color
-                foregroundColor: MaterialStateProperty.all<Color>(Colors.white), // Set text color to white
+                      );
+                    },
+                  );
+                },
+                style: ButtonStyle(
+                  backgroundColor: MaterialStateProperty.all<Color>(const Color(0xFFEC2D33)), // Set button background color
+                  foregroundColor: MaterialStateProperty.all<Color>(Colors.white), // Set text color to white
+                ),
+                child: Text('Check Status'),
               ),
-              child: Text('Check Status'),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
   }
+
 
   Future<void> generateAndSavePdf(BuildContext context, Map<String, dynamic> inspectionData) async {
     final pw.Document pdfDoc = pw.Document();
@@ -295,13 +303,6 @@ class UserPage extends StatelessWidget {
     final filePath = '${directory!.path}/$fileName'; // Include the file name in the path
     saveAndOpenPdf(context, pdfDoc, filePath);
   }
-
-
-
-
-
-
-
 
   void saveAndOpenPdf(BuildContext context, pw.Document pdf, String filePath) async {
     final file = File(filePath);

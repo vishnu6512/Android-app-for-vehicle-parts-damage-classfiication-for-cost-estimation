@@ -13,9 +13,11 @@ class _SignupPageState extends State<SignupPage> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  final TextEditingController _confirmPasswordController =
-  TextEditingController();
+  final TextEditingController _confirmPasswordController = TextEditingController();
+  final TextEditingController _nameController = TextEditingController(); // New controller for name
+  final TextEditingController _phoneController = TextEditingController(); // New controller for phone
   final FirebaseAuth _auth = FirebaseAuth.instance;
+  bool _isLoading = false;
 
   String? _validateEmail(String? value) {
     if (value == null || value.isEmpty) {
@@ -42,26 +44,50 @@ class _SignupPageState extends State<SignupPage> {
     return null;
   }
 
+  String? _validateName(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Please enter your name';
+    }
+    return null;
+  }
+
+  String? _validatePhone(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Please enter your phone number';
+    }
+    // You can add more validation rules for phone numbers if needed
+    return null;
+  }
+
   Future<void> _signUp() async {
+    setState(() {
+      _isLoading = true;
+    });
+
     try {
-      UserCredential userCredential =
-      await _auth.createUserWithEmailAndPassword(
+      UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
         email: _emailController.text,
         password: _passwordController.text,
       );
 
       // Save user data to Firestore
-      await FirebaseFirestore.instance
-          .collection('users')
-          .doc(userCredential.user!.uid)
-          .set({
+      await FirebaseFirestore.instance.collection('users').doc(userCredential.user!.uid).set({
         'email': _emailController.text,
+        'name': _nameController.text,
+        'phone': _phoneController.text,
         'role': 'user', // Default role value
       });
 
       print('User signed up: ${userCredential.user!.uid}');
 
       // Navigate back to the sign-in page
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Successfully registered!'),
+          duration: Duration(seconds: 2),
+        ),
+      );
+
       Navigator.pop(context);
     } on FirebaseAuthException catch (e) {
       if (e.code == 'weak-password') {
@@ -71,9 +97,12 @@ class _SignupPageState extends State<SignupPage> {
       }
     } catch (e) {
       print(e);
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
     }
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -101,7 +130,6 @@ class _SignupPageState extends State<SignupPage> {
                     color: Color(0xFF030303),
                     fontSize: 18,
                     fontFamily: 'Roboto',
-
                   ),
                   textAlign: TextAlign.center,
                 ),
@@ -112,9 +140,19 @@ class _SignupPageState extends State<SignupPage> {
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: <Widget>[
                       TextFormField(
+                        controller: _nameController,
+                        decoration: InputDecoration(labelText: 'Name'),
+                        validator: _validateName,
+                      ),
+                      TextFormField(
                         controller: _emailController,
                         decoration: InputDecoration(labelText: 'Email'),
                         validator: _validateEmail,
+                      ),
+                      TextFormField(
+                        controller: _phoneController,
+                        decoration: InputDecoration(labelText: 'Phone Number'),
+                        validator: _validatePhone,
                       ),
                       TextFormField(
                         controller: _passwordController,
@@ -130,7 +168,9 @@ class _SignupPageState extends State<SignupPage> {
                       ),
                       SizedBox(height: 16.0),
                       ElevatedButton(
-                        onPressed: () {
+                        onPressed: _isLoading
+                            ? null
+                            : () {
                           if (_formKey.currentState!.validate()) {
                             _signUp();
                           }
@@ -139,7 +179,11 @@ class _SignupPageState extends State<SignupPage> {
                           backgroundColor: MaterialStateProperty.all<Color>(const Color(0xFFEC2D33)),
                           foregroundColor: MaterialStateProperty.all<Color>(Colors.white),
                         ),
-                        child: Text('Signup'),
+                        child: _isLoading
+                            ? CircularProgressIndicator(
+                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                        )
+                            : Text('Signup'),
                       ),
                     ],
                   ),
@@ -151,9 +195,6 @@ class _SignupPageState extends State<SignupPage> {
       ),
     );
   }
-
-
-
 }
 
 void main() {
