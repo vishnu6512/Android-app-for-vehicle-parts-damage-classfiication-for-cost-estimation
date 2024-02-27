@@ -35,7 +35,7 @@ class UserPage extends StatelessWidget {
   }
 
   Widget _buildUserPage(BuildContext context, User user) {
-    String phoneNumber = '';
+    String appid = '';
 
     return Scaffold(
       appBar: AppBar(
@@ -114,9 +114,9 @@ class UserPage extends StatelessWidget {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             TextFormField(
-                              decoration: InputDecoration(labelText: 'Enter Phone Number'),
+                              decoration: InputDecoration(labelText: 'Enter Application ID'),
                               onChanged: (value) {
-                                phoneNumber = value;
+                                appid = value;
                               },
                             ),
                           ],
@@ -132,7 +132,7 @@ class UserPage extends StatelessWidget {
                             onPressed: () async {
                               QuerySnapshot querySnapshot = await FirebaseFirestore.instance
                                   .collection('inspectiondata')
-                                  .where('phone', isEqualTo: phoneNumber)
+                                  .where('doc_id', isEqualTo: appid)
                                   .get();
 
                               if (querySnapshot.docs.isNotEmpty) {

@@ -10,6 +10,8 @@ import 'package:image/image.dart' as img_lib;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart' as firebase_storage;
 import 'dealer.dart';
+import 'package:emailjs/emailjs.dart';
+
 
 class CaptureImg extends StatefulWidget {
   final Map<String, dynamic> requestData;
@@ -21,14 +23,18 @@ class CaptureImg extends StatefulWidget {
 
 class _CaptureImgState extends State<CaptureImg> {
   late Interpreter _interpreter;
+  late Interpreter _severityInterpreter;
+
   final List<String> _classNames = [
     "Back Bumper", "Bonnet", "Brakelight", "Front Bumper",
     "Front Door", "Front fender", "Front Windscreen Glass",
-    "Full Damage", "Headlight", "Side Mirror", "Scratch/Dent", "Rear Glass"
+    "Full Damage", "Headlight", "Rear Glass", "Scratch/Dent", "Side Mirrors"
   ];
+  final List<String> _severityClassNames = ["Low", "Medium", "High"];
 
   List<File> _images = [];
   List<String> _labels = [];
+  List<String> _severityLabels = [];
 
   Map<String, Map<String, double>> _costData = {};
 
@@ -42,7 +48,7 @@ class _CaptureImgState extends State<CaptureImg> {
       'Front Door': 5888,
       'Front Fender': 1090,
       'Front Windscreen Glass': 3968,
-      'Full Damage': 1000,
+      'Full Damage': 554000,
       'Headlight': 2944,
       'Scratch/Dent': 1000,
       'Side Mirrors': 1000,
@@ -55,7 +61,7 @@ class _CaptureImgState extends State<CaptureImg> {
       'Front Door': 4867,
       'Front Fender': 2355,
       'Front Windscreen Glass': 4965,
-      'Full Damage': 1000,
+      'Full Damage': 791000,
       'Headlight': 5452,
       'Scratch/Dent': 1000,
       'Side Mirrors': 7969,
@@ -69,7 +75,7 @@ class _CaptureImgState extends State<CaptureImg> {
       'Front Door': 23552,
       'Front Fender': 1664,
       'Front Windscreen Glass': 8960,
-      'Full Damage': 1000,
+      'Full Damage': 565000,
       'Headlight': 7680,
       'Scratch/Dent': 1000,
       'Side Mirrors': 1150,
@@ -82,7 +88,7 @@ class _CaptureImgState extends State<CaptureImg> {
       'Front Door': 7216,
       'Front Fender': 1689,
       'Front Windscreen Glass': 4496,
-      'Full Damage': 1000,
+      'Full Damage': 658000,
       'Headlight': 7654,
       'Scratch/Dent': 1000,
       'Side Mirrors': 454,
@@ -96,7 +102,7 @@ class _CaptureImgState extends State<CaptureImg> {
       'Front Door': 8690,
       'Front Fender': 1973,
       'Front Windscreen Glass': 5247,
-      'Full Damage': 1000,
+      'Full Damage': 869000,
       'Headlight': 3328,
       'Scratch/Dent': 1000,
       'Side Mirrors': 4470,
@@ -109,7 +115,7 @@ class _CaptureImgState extends State<CaptureImg> {
       'Front Door': 6291,
       'Front Fender': 1472,
       'Front Windscreen Glass': 4480,
-      'Full Damage': 1000,
+      'Full Damage': 666000,
       'Headlight': 3982,
       'Scratch/Dent': 1000,
       'Side Mirrors': 1120,
@@ -123,7 +129,7 @@ class _CaptureImgState extends State<CaptureImg> {
       'Front Door': 6654,
       'Front Fender': 1214,
       'Front Windscreen Glass': 4308,
-      'Full Damage': 100,
+      'Full Damage': 354000,
       'Headlight': 3276,
       'Scratch/Dent': 1000,
       'Side Mirrors': 565,
@@ -136,7 +142,7 @@ class _CaptureImgState extends State<CaptureImg> {
       'Front Door': 5090,
       'Front Fender': 1305,
       'Front Windscreen Glass': 4416,
-      'Full Damage': 1000,
+      'Full Damage': 584000,
       'Headlight': 2873,
       'Scratch/Dent': 1000,
       'Side Mirrors': 2534,
@@ -150,7 +156,7 @@ class _CaptureImgState extends State<CaptureImg> {
       'Front Door': 10094,
       'Front Fender': 2038,
       'Front Windscreen Glass': 4265,
-      'Full Damage': 1000,
+      'Full Damage': 834000,
       'Headlight': 4736,
       'Scratch/Dent': 1000,
       'Side Mirrors': 1949,
@@ -163,7 +169,7 @@ class _CaptureImgState extends State<CaptureImg> {
       'Front Door': 4746,
       'Front Fender': 1052,
       'Front Windscreen Glass': 2412,
-      'Full Damage': 1000,
+      'Full Damage': 335000,
       'Headlight': 2495,
       'Scratch/Dent': 1000,
       'Side Mirrors': 1054,
@@ -176,7 +182,20 @@ class _CaptureImgState extends State<CaptureImg> {
       'Front Door': 5400,
       'Front Fender': 1567,
       'Front Windscreen Glass': 4470,
-      'Full Damage': 1000,
+      'Full Damage': 630000,
+      'Headlight': 3980,
+      'Scratch/Dent': 1000,
+      'Side Mirrors': 2500,
+    },
+    'Innova Hycross': {
+      'Back Bumper': 3200,
+      'Bonnet': 11468,
+      'Brakelight': 17500,
+      'Front Bumper': 5500,
+      'Front Door': 5400,
+      'Front Fender': 1567,
+      'Front Windscreen Glass': 4470,
+      'Full Damage': 1970000,
       'Headlight': 3980,
       'Scratch/Dent': 1000,
       'Side Mirrors': 2500,
@@ -192,7 +211,9 @@ class _CaptureImgState extends State<CaptureImg> {
 
   Future<void> loadModel() async {
     try {
-      _interpreter = await Interpreter.fromAsset('assets/output_modelfeb19.tflite');
+      _interpreter = await Interpreter.fromAsset('assets/feb26aidata.tflite');
+      _severityInterpreter = await Interpreter.fromAsset('assets/level.tflite'); // Load severity model
+
     } catch (e) {
       print('Error loading model: $e');
     }
@@ -204,11 +225,48 @@ class _CaptureImgState extends State<CaptureImg> {
       img_lib.Image image = img_lib.decodeImage(imageBytes)!;
       img_lib.Image resizedImage = img_lib.copyResize(image, width: width, height: height);
       Uint8List resizedBytes = img_lib.encodePng(resizedImage);
+      print(resizedImage);
       classifyImage(resizedBytes);
+      classifySeverity(resizedBytes);
     } catch (error) {
       print('Error resizing and preprocessing image: $error');
     }
   }
+
+  void classifySeverity(Uint8List imageBytes) {
+    try {
+      final resizedImage = img_lib.decodeImage(imageBytes)!;
+      final inputImage = img_lib.copyResize(resizedImage, width: 224, height: 224);
+      final inputBuffer = Float32List(224 * 224 * 3);
+
+      // Preprocess image for the severity model
+      for (var i = 0; i < 224; i++) {
+        for (var j = 0; j < 224; j++) {
+          var pixel = inputImage.getPixel(j, i);
+          inputBuffer[i * 224 * 3 + j * 3 + 0] = ((pixel.r.toDouble() - 127.5) / 127.5).toDouble();
+          inputBuffer[i * 224 * 3 + j * 3 + 1] = ((pixel.g.toDouble() - 127.5) / 127.5).toDouble();
+          inputBuffer[i * 224 * 3 + j * 3 + 2] = ((pixel.b.toDouble() - 127.5) / 127.5).toDouble();
+        }
+      }
+
+      final outputBuffer = Float32List(1 * 3); // Assuming the severity model outputs 3 classes
+      _severityInterpreter.run(inputBuffer.buffer.asUint8List(), outputBuffer.buffer.asUint8List());
+      final double maxConfidence = outputBuffer.reduce((a, b) => a > b ? a : b);
+      final int index = outputBuffer.indexOf(maxConfidence);
+
+      setState(() {
+        String severityLabel = _severityClassNames[index];
+        _severityLabels.add(severityLabel);
+
+        // Print the predicted severity label for debugging
+        print('Predicted Severity: $severityLabel');
+      });
+    } catch (e) {
+      print('Error classifying severity: $e');
+    }
+  }
+
+
 
   void classifyImage(Uint8List imageBytes) {
     try {
@@ -279,13 +337,9 @@ class _CaptureImgState extends State<CaptureImg> {
         'image_urls': imageUrls,
         'labels': _labels,
         'cost_data': _costData[widget.requestData['vehicle_model']],
+        'doc_id': widget.requestData['doc_id'],
       });
 
-      // Get the document ID from the DocumentReference
-      String docId = docRef.id;
-
-      // Update the document to store the document ID
-      await docRef.update({'doc_id': docId});
 
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: Text('Data saved successfully!'),
@@ -319,7 +373,7 @@ class _CaptureImgState extends State<CaptureImg> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Total Cost: \$${totalCost.toStringAsFixed(2)}'),
+              Text('Total Cost: Rs ${totalCost.toStringAsFixed(2)}'),
               SizedBox(height: 10),
               Text('Cost Details:'),
               Text(costDetails),
@@ -356,6 +410,9 @@ class _CaptureImgState extends State<CaptureImg> {
       await FirebaseFirestore.instance.collection('inspectionrequests').doc(documentId).delete();
       print('Document deleted successfully.');
 
+      // Send email using EmailJS
+      await sendEmail();
+
       // Navigate to dealer page
       Navigator.pushReplacementNamed(context, '/dealer');
     } catch (e) {
@@ -363,6 +420,30 @@ class _CaptureImgState extends State<CaptureImg> {
     }
   }
 
+
+  Future<void> sendEmail() async {
+    Map<String, dynamic> templateParams = {
+      'name': widget.requestData['name'],
+      'email': widget.requestData['email'],
+      'phone': widget.requestData['phone'],
+      'doc_id': widget.requestData['doc_id'],
+       };
+
+    try {
+      await EmailJS.send(
+        'service_8s7993e',
+        'template_ib4wh0j',
+        templateParams,
+        const Options(
+          publicKey: 'EZeHksz0xKNnN2tO3',
+          privateKey: 'bl5fBKREKPgLIMltBw36a',
+        ),
+      );
+      print('Email sent successfully!');
+    } catch (error) {
+      print('Failed to send email: $error');
+    }
+  }
 
 
 
@@ -423,7 +504,8 @@ class _CaptureImgState extends State<CaptureImg> {
                           fit: BoxFit.cover,
                         ),
                       ),
-                      Text('Labels: ${_labels[index]}'),
+                      Text('Label: ${_labels[index]}'),
+                      Text('Severity: ${_severityLabels[index]}'),
                       Divider(),
                     ],
                   );

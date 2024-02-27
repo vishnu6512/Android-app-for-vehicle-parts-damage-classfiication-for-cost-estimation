@@ -11,6 +11,7 @@ import 'dealer.dart';
 import 'registervehicle.dart';
 import 'inspectionrequest.dart';
 import 'captureimg.dart';
+import 'package:loading_animation_widget/loading_animation_widget.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -32,16 +33,13 @@ class MyApp extends StatelessWidget {
         scaffoldBackgroundColor: const Color(0xFFFFFFFF),
         visualDensity: VisualDensity.adaptivePlatformDensity,
         buttonTheme: ButtonThemeData(
-          buttonColor: const Color(0xFFEC2D33), // Set button background color
-          textTheme: ButtonTextTheme.primary, // Use primary text style (white)
+          buttonColor: const Color(0xFFEC2D33),
+          textTheme: ButtonTextTheme.primary,
         ),
         dialogTheme: DialogTheme(
-          backgroundColor: Colors.white, // Set dialog background color to white
+          backgroundColor: Colors.white,
         ),
       ),
-
-
-
       routes: {
         '/signup': (context) => SignupPage(),
         '/signin': (context) => SigninPage(),
@@ -53,7 +51,55 @@ class MyApp extends StatelessWidget {
         '/inspectionrequest': (context) => InspectionRequestPage(),
         '/captureimg': (context) => CaptureImg(requestData: data),
       },
-      home: MyHomePage(),
+      home: SplashScreen(), // Set the splash screen as the initial route
+    );
+  }
+}
+
+class SplashScreen extends StatefulWidget {
+  @override
+  _SplashScreenState createState() => _SplashScreenState();
+}
+
+class _SplashScreenState extends State<SplashScreen> {
+  @override
+  void initState() {
+    super.initState();
+    // Add any initialization logic here
+    navigateToHomePage(); // Navigate to the home page after a delay
+  }
+
+  void navigateToHomePage() {
+    Future.delayed(Duration(seconds: 3), () {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => MyHomePage()), // Navigate to the main page
+      );
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.white, // Set background color to white
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Image.asset(
+              'assets/logomain.png',
+              width: 350, // Adjust width as needed
+              height: 100, // Adjust height as needed
+            ),
+            SizedBox(height: 20), // Add some spacing below the logo
+            LoadingAnimationWidget.flickr(
+              leftDotColor: const Color(0xFF1A1A3F),
+              rightDotColor: const Color(0xFFEC2D33),
+              size: 60,
+            ),// Add a loading indicator
+          ],
+        ),
+      ),
     );
   }
 }
@@ -149,6 +195,7 @@ class MyHomePage extends StatelessWidget {
     );
   }
 }
+
 
 
 

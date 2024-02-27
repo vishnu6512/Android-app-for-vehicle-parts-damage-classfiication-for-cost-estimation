@@ -54,6 +54,8 @@ dependencies:
   intl: ^0.18.1
   http: ^1.2.0
   path: ^1.8.3
+  loading_animation_widget: ^1.2.0+4
+  emailjs: ^1.3.0
 
 dev_dependencies:
   flutter_test:
@@ -78,16 +80,16 @@ flutter:
   uses-material-design: true
 
   assets:
-    - assets/output_modelfeb19.tflite
+    - assets/feb26aidata.tflite
     - assets/labels.txt
     - assets/costs.csv
-    - assets/Helvetica CE Medium.otf
     - assets/main.png
     - assets/signup.png
     - assets/signup2.png
     - assets/signin.png
     - assets/logomain.png
     - assets/user.png
+    - assets/level.tflite
 
 
 
