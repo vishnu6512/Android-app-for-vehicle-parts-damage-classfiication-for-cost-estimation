@@ -55,7 +55,6 @@ class _SignupPageState extends State<SignupPage> {
     if (value == null || value.isEmpty) {
       return 'Please enter your phone number';
     }
-    // You can add more validation rules for phone numbers if needed
     return null;
   }
 

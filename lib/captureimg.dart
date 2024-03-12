@@ -23,18 +23,17 @@ class CaptureImg extends StatefulWidget {
 
 class _CaptureImgState extends State<CaptureImg> {
   late Interpreter _interpreter;
-  late Interpreter _severityInterpreter;
 
   final List<String> _classNames = [
     "Back Bumper", "Bonnet", "Brakelight", "Front Bumper",
     "Front Door", "Front fender", "Front Windscreen Glass",
     "Full Damage", "Headlight", "Rear Glass", "Scratch/Dent", "Side Mirrors"
   ];
-  final List<String> _severityClassNames = ["Low", "Medium", "High"];
+
 
   List<File> _images = [];
   List<String> _labels = [];
-  List<String> _severityLabels = [];
+
 
   Map<String, Map<String, double>> _costData = {};
 
@@ -66,7 +65,7 @@ class _CaptureImgState extends State<CaptureImg> {
       'Scratch/Dent': 1000,
       'Side Mirrors': 7969,
     },
-    // Add other vehicle models here following the same pattern
+
     'Tiago': {
       'Back Bumper': 2600,
       'Bonnet': 8960,
@@ -93,7 +92,7 @@ class _CaptureImgState extends State<CaptureImg> {
       'Scratch/Dent': 1000,
       'Side Mirrors': 454,
     },
-    // Add other vehicle models here following the same pattern
+
     'Ertiga': {
       'Back Bumper': 2816,
       'Bonnet': 6000,
@@ -120,7 +119,7 @@ class _CaptureImgState extends State<CaptureImg> {
       'Scratch/Dent': 1000,
       'Side Mirrors': 1120,
     },
-    // Add other vehicle models here following the same pattern
+
     'Alto': {
       'Back Bumper': 2621,
       'Bonnet': 3850,
@@ -147,7 +146,7 @@ class _CaptureImgState extends State<CaptureImg> {
       'Scratch/Dent': 1000,
       'Side Mirrors': 2534,
     },
-    // Add other vehicle models here following the same pattern
+
     'Brezza': {
       'Back Bumper': 1852,
       'Bonnet': 7615,
@@ -200,7 +199,7 @@ class _CaptureImgState extends State<CaptureImg> {
       'Scratch/Dent': 1000,
       'Side Mirrors': 2500,
     },
-    // Add other vehicle models here following the same pattern
+
   };
 
   @override
@@ -212,7 +211,6 @@ class _CaptureImgState extends State<CaptureImg> {
   Future<void> loadModel() async {
     try {
       _interpreter = await Interpreter.fromAsset('assets/feb26aidata.tflite');
-      _severityInterpreter = await Interpreter.fromAsset('assets/level.tflite'); // Load severity model
 
     } catch (e) {
       print('Error loading model: $e');
@@ -227,44 +225,11 @@ class _CaptureImgState extends State<CaptureImg> {
       Uint8List resizedBytes = img_lib.encodePng(resizedImage);
       print(resizedImage);
       classifyImage(resizedBytes);
-      classifySeverity(resizedBytes);
     } catch (error) {
       print('Error resizing and preprocessing image: $error');
     }
   }
 
-  void classifySeverity(Uint8List imageBytes) {
-    try {
-      final resizedImage = img_lib.decodeImage(imageBytes)!;
-      final inputImage = img_lib.copyResize(resizedImage, width: 224, height: 224);
-      final inputBuffer = Float32List(224 * 224 * 3);
-
-      // Preprocess image for the severity model
-      for (var i = 0; i < 224; i++) {
-        for (var j = 0; j < 224; j++) {
-          var pixel = inputImage.getPixel(j, i);
-          inputBuffer[i * 224 * 3 + j * 3 + 0] = ((pixel.r.toDouble() - 127.5) / 127.5).toDouble();
-          inputBuffer[i * 224 * 3 + j * 3 + 1] = ((pixel.g.toDouble() - 127.5) / 127.5).toDouble();
-          inputBuffer[i * 224 * 3 + j * 3 + 2] = ((pixel.b.toDouble() - 127.5) / 127.5).toDouble();
-        }
-      }
-
-      final outputBuffer = Float32List(1 * 3); // Assuming the severity model outputs 3 classes
-      _severityInterpreter.run(inputBuffer.buffer.asUint8List(), outputBuffer.buffer.asUint8List());
-      final double maxConfidence = outputBuffer.reduce((a, b) => a > b ? a : b);
-      final int index = outputBuffer.indexOf(maxConfidence);
-
-      setState(() {
-        String severityLabel = _severityClassNames[index];
-        _severityLabels.add(severityLabel);
-
-        // Print the predicted severity label for debugging
-        print('Predicted Severity: $severityLabel');
-      });
-    } catch (e) {
-      print('Error classifying severity: $e');
-    }
-  }
 
 
 
@@ -289,7 +254,12 @@ class _CaptureImgState extends State<CaptureImg> {
       final int index = outputBuffer.indexOf(maxConfidence);
 
       setState(() {
-        String label = _classNames[index];
+        String label;
+        if (maxConfidence > 0.60) {
+          label = _classNames[index];
+        } else {
+          label = "Unknown Object";
+        }
         _labels.add(label);
 
         double partCost = (vehiclePartsCost[widget.requestData['vehicle_model']] ?? {})[label] ?? 0;
@@ -299,11 +269,15 @@ class _CaptureImgState extends State<CaptureImg> {
         } else {
           _costData[widget.requestData['vehicle_model']] = {label: partCost};
         }
+
+        // Print confidence value
+        print('Label: $label, Confidence: $maxConfidence');
       });
     } catch (e) {
       print('Error classifying image: $e');
     }
   }
+
 
   Future<void> _captureImage(ImageSource source) async {
     final picker = ImagePicker();
@@ -328,6 +302,16 @@ class _CaptureImgState extends State<CaptureImg> {
         imageUrls.add(imageUrl);
       }
 
+      // Create a map to store the accumulated costs for each label
+      Map<String, double> accumulatedCosts = {};
+
+      // Iterate through the labels and accumulate the costs
+      for (int i = 0; i < _labels.length; i++) {
+        String label = _labels[i];
+        double partCost = (_costData[widget.requestData['vehicle_model']] ?? {})[label] ?? 0;
+        accumulatedCosts[label] = (accumulatedCosts[label] ?? 0) + partCost;
+      }
+
       DocumentReference docRef = await FirebaseFirestore.instance.collection('inspectiondata').add({
         'name': widget.requestData['name'],
         'email': widget.requestData['email'],
@@ -336,10 +320,9 @@ class _CaptureImgState extends State<CaptureImg> {
         'vehicle_model': widget.requestData['vehicle_model'],
         'image_urls': imageUrls,
         'labels': _labels,
-        'cost_data': _costData[widget.requestData['vehicle_model']],
+        'cost_data': accumulatedCosts, // Store the accumulated costs instead of _costData
         'doc_id': widget.requestData['doc_id'],
       });
-
 
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: Text('Data saved successfully!'),
@@ -355,13 +338,25 @@ class _CaptureImgState extends State<CaptureImg> {
   }
 
 
+
   void _analyzeCostAndSave() {
     double totalCost = 0;
     String costDetails = '';
 
-    _costData[widget.requestData['vehicle_model']]?.forEach((key, value) {
-      totalCost += value;
-      costDetails += '$key: ${value.toStringAsFixed(2)}\n';
+    // Map to store the accumulated costs for each label
+    Map<String, double> accumulatedCosts = {};
+
+    // Iterate through the labels and accumulate the costs
+    for (int i = 0; i < _labels.length; i++) {
+      String label = _labels[i];
+      double partCost = (_costData[widget.requestData['vehicle_model']] ?? {})[label] ?? 0;
+      totalCost += partCost;
+      accumulatedCosts[label] = (accumulatedCosts[label] ?? 0) + partCost;
+    }
+
+    // Generate cost details for display
+    accumulatedCosts.forEach((label, cost) {
+      costDetails += '$label: ${cost.toStringAsFixed(2)}\n';
     });
 
     showDialog(
@@ -398,6 +393,7 @@ class _CaptureImgState extends State<CaptureImg> {
       },
     );
   }
+
 
   void _inspectionCompleted() async {
     try {
@@ -505,7 +501,6 @@ class _CaptureImgState extends State<CaptureImg> {
                         ),
                       ),
                       Text('Label: ${_labels[index]}'),
-                      Text('Severity: ${_severityLabels[index]}'),
                       Divider(),
                     ],
                   );
