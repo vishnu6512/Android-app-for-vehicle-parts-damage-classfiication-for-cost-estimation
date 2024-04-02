@@ -41,8 +41,8 @@ class AdminPage extends StatelessWidget {
               );
             },
             style: ButtonStyle(
-              backgroundColor: MaterialStateProperty.all<Color>(const Color(0xFFEC2D33)), // Set button background color
-              foregroundColor: MaterialStateProperty.all<Color>(Colors.white), // Set text color to white
+              backgroundColor: MaterialStateProperty.all<Color>(const Color(0xFFEC2D33)),
+              foregroundColor: MaterialStateProperty.all<Color>(Colors.white),
             ),
             child: Text('Register Dealer'),
           ),
@@ -125,7 +125,7 @@ class ApprovedRequestsList extends StatelessWidget {
                               Text('Vehicle Model: ${doc['vehicle_model']}'),
                               Text('Doc ID: ${doc.id}'),
                               Text('Cost Data: $costDataString'),
-                              // Add more details as needed
+
                             ],
                           ),
                           actions: [

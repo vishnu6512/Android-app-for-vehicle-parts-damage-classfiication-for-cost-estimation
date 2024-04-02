@@ -80,16 +80,23 @@ class _SigninPageState extends State<SigninPage> {
       }
     } on FirebaseAuthException catch (e) {
       if (e.code == 'user-not-found') {
-        print('No user found for that email.');
+        _showSnackBar('No user found for that email.');
       } else if (e.code == 'wrong-password') {
-        print('Wrong password provided for that user.');
+        _showSnackBar('Wrong password provided for that user.');
       } else {
-        print('Firebase Auth error: $e');
+        _showSnackBar('Invalid Credentials');
       }
     } catch (e) {
-      print('Error: $e');
+      _showSnackBar('Error: $e');
     }
   }
+
+  void _showSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text(message),
+    ));
+  }
+
 
   Future<void> _resetPassword(String email) async {
     try {

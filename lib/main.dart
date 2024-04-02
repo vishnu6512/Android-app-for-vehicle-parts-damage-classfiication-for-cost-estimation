@@ -154,8 +154,7 @@ class MyHomePage extends StatelessWidget {
                   Navigator.pushNamed(context, '/signup');
                 },
                 style: ElevatedButton.styleFrom(
-                  primary: Color(0xFFEC2D33),
-                  onPrimary: Colors.white,
+                  foregroundColor: Colors.white, backgroundColor: Color(0xFFEC2D33),
                   minimumSize: Size(335, 48),
                   padding: EdgeInsets.symmetric(horizontal: 8),
                   shape: RoundedRectangleBorder(
@@ -178,8 +177,7 @@ class MyHomePage extends StatelessWidget {
                   Navigator.pushNamed(context, '/signin');
                 },
                 style: ElevatedButton.styleFrom(
-                  primary: Colors.white,
-                  onPrimary: Color(0xFFEC2D33),
+                  foregroundColor: Color(0xFFEC2D33), backgroundColor: Colors.white,
                   minimumSize: Size(335, 48),
                   padding: EdgeInsets.symmetric(horizontal: 8),
                   shape: RoundedRectangleBorder(

@@ -255,7 +255,7 @@ class _CaptureImgState extends State<CaptureImg> {
 
       setState(() {
         String label;
-        if (maxConfidence > 0.60) {
+        if (maxConfidence > 0.55) {
           label = _classNames[index];
         } else {
           label = "Unknown Object";
