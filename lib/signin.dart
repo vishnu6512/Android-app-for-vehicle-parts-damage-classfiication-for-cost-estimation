@@ -126,13 +126,12 @@ class _SigninPageState extends State<SigninPage> {
             Flexible(
               child: Image.asset(
                 'assets/signin.png',
-                // Replace 'signin_image.png' with your image asset path
-                width: 350, // Adjust width as needed
-                height: 350, // Adjust height as needed
+                width: 350,
+                height: 350,
               ),
             ),
             SizedBox(height: 20),
-            // Add some space between the image and the form fields
+
             Form(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -169,7 +168,7 @@ class _SigninPageState extends State<SigninPage> {
                         _isLoading = true; // Set loading state to true
                       });
                       try {
-                        // Your sign-in logic goes here
+                        
                         await _signIn();
                       } finally {
                         setState(() {

@@ -210,7 +210,7 @@ class _CaptureImgState extends State<CaptureImg> {
 
   Future<void> loadModel() async {
     try {
-      _interpreter = await Interpreter.fromAsset('assets/feb26aidata.tflite');
+      _interpreter = await Interpreter.fromAsset('assets/april3.tflite');
 
     } catch (e) {
       print('Error loading model: $e');
@@ -255,7 +255,7 @@ class _CaptureImgState extends State<CaptureImg> {
 
       setState(() {
         String label;
-        if (maxConfidence > 0.55) {
+        if (maxConfidence > 0.10) {
           label = _classNames[index];
         } else {
           label = "Unknown Object";
