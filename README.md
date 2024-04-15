@@ -1,16 +1,4 @@
-# inspect
+# Android-app-for-vehicle-parts-damage-classfiication-for-cost-estimation
 
-A new Flutter project.
+We have created an Android App for classification of vehicle damage using machine vision. It can be used to generate a cost estimation report for insurance purposes. It has a homepage, sign-in & sign-up page, user page, dealer page and admin page. The user can request inspection through user page. The dealer will receive the request from users. The dealer can select any requests from the list and capture images of the damaged part of the vehicle. After capturing the image, corresponding label of the part is identified by the tflite model and the total cost can be analyzed. After the inspection is completed, a confirmation mail is sent to the user with an application ID. The application ID can be utilized by the user to get the PDF Invoice. The admin can view all the approved requests list through admin page. The admin also can register new dealers.
 
-## Getting Started
-
-This project is a starting point for a Flutter application.
-
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
